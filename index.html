@@ -37,10 +37,10 @@
 
     <script>
         if ('WebSocket' in window || 'MozWebSocket' in window) {
-            const socket = new WebSocket('wss://ws.bitstamp.net');
-            const currencies = ['btcusd', 'btceur', 'btcgbp', 'btcpax', 'gbpusd', 'gbpeur', 'eurusd', 'xrpusd',
-                'xrpeur', 'xrpbtc', 'xrpgbp', 'xrppax'
-            ]
+            const socket = new WebSocket('wss://ws.twelvedata.com/v1/quotes/price?apikey=5182bd154ffe4591b34c5290bc9fbfb3');
+            //console.log(socket);
+
+            const currencies = ['EUR/USD', 'BTC/USD', 'AAPL'];
 
             let html = '';
 
@@ -51,7 +51,7 @@
                 html += `<td id="${element}">${element}</td>`
                 html += `<td id="${element}_price">--</td>`
                 html += '</tr>'
-            })
+            });
 
             document.getElementById('data-dump').innerHTML = html
 
@@ -59,10 +59,10 @@
             socket.addEventListener('open', e => {
                 currencies.forEach((element, index) => {
                     socket.send(JSON.stringify({
-                        event: 'bts:subscribe',
-                        data: {
-                            channel: `live_trades_${element}`
-                        }
+                        action: "subscribe",
+                        params: {
+                            symbols: `${element}`
+                        },
                     }));
                 });
             });
@@ -72,11 +72,11 @@
             // is now that the holly spirit said i should decode what ever i recieved from the
             // mighty socket and display to my humble client  ✌🏽
             socket.addEventListener('message', e => {
-                // console.log('Message from server ', e.data);
+                console.log('Message from server ', e.data);
                 let data = JSON.parse(e.data)
-                if (data.event == 'trade') {
-                    let currency = data.channel.slice('live_trades_'.length)
-                    document.getElementById(`${currency}_price`).innerHTML = "→" + data.data.price_str
+                if (data.event == 'price') {
+                    let currency = data.symbol;
+                    document.getElementById(`${currency}_price`).innerHTML = "→" + data.price;
                 }
             });
 
